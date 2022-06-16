@@ -4,13 +4,15 @@ class Eclate{
     public $minsupp;
     public $conf;
     public $frequentitems;
+    public $duration = 0;
 
     public function __construct($dataset,$minsupp,$conf){
         $this->dataset = $dataset;
         $this->minsupp = $minsupp;
         $this->conf = $conf;
-
+        $start = microtime(true);
         $this->run($dataset);
+        $this->duration = (microtime(true) - $start)*1000;
     }
 
     public function run($dataset){

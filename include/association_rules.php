@@ -9,13 +9,13 @@ class AssociationRules
     private $keys        = array();
     private $delimiter = ',';
 
-    private $minSup      = 2;
+    private $minSup      = 0;
     private $minConf     = 0;
 
     private $allitem   = array();
     private $phase       = 1;
 
-    public function __construct($freq,$minconf,$minsup)
+    public function __construct($freq,$minsup,$minconf)
     {
         $this->freq = $freq;
         $this->minConf = $minconf;
@@ -205,7 +205,6 @@ class AssociationRules
             echo "</tbody><table>";
         }
     }
-
     public function makeTable($db)
     { 
         $table   = array();

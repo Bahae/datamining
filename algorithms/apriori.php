@@ -12,8 +12,8 @@
  */
 class Apriori {
     private $delimiter   = ','; 
-    private $minSup      = 2; 
-    private $minConf     = 75; 
+    private $minSup      = 0; 
+    private $minConf     = 0; 
      
     private $rules       = array(); 
     private $table       = array(); 
@@ -29,62 +29,36 @@ class Apriori {
     private $fiTime      = 0;
     private $arTime      = 0; 
 
-
+   public $duration = 0;
    public function __construct($dataset,$minsupp,$conf){
+
          $this->dataset = $dataset;
-         $this->minsupp = $minsupp;
-         $this->conf = $conf;
- 
+         $this->minSup = $minsupp;
+         $this->minConf = $conf;
+         $start = microtime(true);
          $this->process($dataset);
+         $this->duration = (microtime(true) - $start)*1000;
    }
-      
-   
-    
-    public function getMinSup()
-    {
-       return $this->minSup;
-    }
-    
-    public function getMinConf()
-    {
-       return $this->minConf;
-    }
-    
-    public function getMaxScan()
-    {
-       return $this->maxPhase;
-    }
-    
-    /**
-        1. جدول آیتمها را می سازد
-        2. کلید دسترسی به هر آیتم را تولید می کند
-        3. تمامی آیتمها و تکرار آنها را محاسبه می کند - سطح 1
-        توجه: حداقل تکرار محاسبه میشود
-    **/
+
     private function makeTable($db)
     { 
        $table   = array();
        $array   = array();
        $counter = 1;
-       
-       if(!is_array($db))
-          {
-             $db = file($db);
-          }
+
   
        $num = count($db);  
        for($i=0; $i<$num; $i++) 
           {
-             $tmp  = explode($this->delimiter, $db[$i]);
+             $tmp  = $db[$i];
              $num1 = count($tmp);
              $x    = array();
              for($j=0; $j<$num1; $j++) 
                 {
                    $x = trim($tmp[$j]);
-                   if($x==='')
-                      {
+                   if($x===''){
                          continue;
-                      }
+                     }
                       
                    if(!isset($this->keys['v->k'][$x]))
                       {
