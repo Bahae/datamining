@@ -1,21 +1,23 @@
 <?php 
 
 class Eclate{
-    public $dataset;
     public $minsupp;
-    public $khorti = [];
+    public $conf;
     public $frequentitems;
 
-    public function __construct($dataset,$minsupp){
+    public function __construct($dataset,$minsupp,$conf){
         $this->dataset = $dataset;
         $this->minsupp = $minsupp;
+        $this->conf = $conf;
+
+        $this->run($dataset);
     }
 
-    public function run(){
+    public function run($dataset){
         $itemTidsets = [];
         $itemPairCount = [];
         // Create vertical representation of the transactions and count item pairs.
-        foreach($this->dataset as $tid => $tx){
+        foreach($dataset as $tid => $tx){
             foreach($tx as $k => $item1){
                 if(!array_key_exists($item1,$itemTidsets)){
                     $itemTidsets[$item1] = [];
@@ -57,7 +59,6 @@ class Eclate{
                     'tidset'=>$tidset,
                 ];
                 array_push($atoms, $atom);
-                array_push($this->khorti,$atom);
             }
         }
 
@@ -93,27 +94,24 @@ class Eclate{
                                 'itemset'=>[$item1,$item2],
                                 'tidset'=> array_intersect($atom1['tidset'],$atom2['tidset']),
                             ]); 
-                            array_push($this->khorti,[
-                                'itemset'=>[$item1,$item2],
-                                'tidset'=>$tidset,
-                            ]);
                         }
                     }
                 }		
             }
 
-            list($freqItemsets,$this->khorti) = $this->eclat($newAtoms,$this->minsupp,$freqItemsets,$this->khorti);
+            $freqItemsets = $this->eclat($newAtoms,$this->minsupp,$freqItemsets);
 
         }
-        $khorti = $this->khorti;
-        uksort($this->khorti, function($a, $b) use($khorti) {
-            return count($khorti[$a]['itemset']) - count($khorti[$b]['itemset']); 
-        });
+
+        foreach($freqItemsets as $id => $inner){
+            sort($inner);
+            $freqItemsets[$id] = $inner;
+        }
         
         $this->frequentitems = $freqItemsets;        
     }
 
-    private function eclat($atoms,$min,$freqItemsets,$allatoms) {
+    private function eclat($atoms,$min,$freqItemsets) {
         // Perform the eclat algorithm by recursively combining atoms to larger itemsets.
         foreach($atoms as $k => $atom1){
             $newAtoms = [];
@@ -130,17 +128,19 @@ class Eclate{
                         'itemset'=>$itemset,
                         'tidset'=>$tidset,
                     ]);
-
-                    array_push($allatoms,[
-                        'itemset'=>$itemset,
-                        'tidset'=>$tidset,
-                    ]);
                 }
             }
             
-            list($freqItemsets,$allatoms) = $this->eclat($newAtoms, $min,$freqItemsets,$allatoms);
+            $freqItemsets = $this->eclat($newAtoms, $min,$freqItemsets);
         }
-        return [$freqItemsets,$allatoms];
+        return $freqItemsets;
+    }
+
+    public function AssociationRules(){
+        $assRules = new AssociationRules($this->frequentitems,$this->minsupp,$this->conf);
+        $assRules->makeTable($this->dataset);
+    
+        return $assRules->process();
     }
 
 
@@ -152,4 +152,6 @@ class Eclate{
         return [$b, $a];
         
     }
+
+    
 }
