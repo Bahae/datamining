@@ -15,86 +15,47 @@ class Apriori
 {
    private $delimiter   = ',';
    private $minSup      = 0;
-   private $minConf     = 0;
 
-   private $rules       = array();
    private $table       = array();
    private $allthings   = array();
    private $allsups     = array();
-   private $keys        = array();
+
    private $freqItmsts  = array();
    private $phase       = 1;
 
    //maxPhase>=2
    private $maxPhase    = 20;
 
-   private $fiTime      = 0;
-   private $arTime      = 0;
-
    public $duration = 0;
-   public function __construct($dataset, $minsupp, $conf)
+   public function __construct($dataset, $minsupp,$allthings,$allsups,$table)
    {
       $this->dataset = $dataset;
       $this->minSup = $minsupp;
-      $this->minConf = $conf;
+      $this->allthings = $allthings;
+      $this->allsups = $allsups;
+      $this->table = $table;
+      
    }
 
    public function run()
    {
-      return $this->freqItems($this->dataset);
-   }
+      $this->freqItemsets();
+      
 
-   private function makeTable($db)
-   {
-      $table   = array();
-      $array   = array();
-      $counter = 1;
-
-
-      $num = count($db);
-      for ($i = 0; $i < $num; $i++) {
-         $tmp  = $db[$i];
-         $num1 = count($tmp);
-         $x    = array();
-         for ($j = 0; $j < $num1; $j++) {
-            $x = trim($tmp[$j]);
-            if ($x === '') {
-               continue;
-            }
-
-            if (!isset($this->keys['v->k'][$x])) {
-               $this->keys['v->k'][$x]         = $counter;
-               $this->keys['k->v'][$counter]   = $x;
-               $counter++;
-            }
-
-            if (!isset($array[$this->keys['v->k'][$x]])) {
-               $array[$this->keys['v->k'][$x]] = 1;
-               $this->allsups[$this->keys['v->k'][$x]] = 1;
-            } else {
-               $array[$this->keys['v->k'][$x]]++;
-               $this->allsups[$this->keys['v->k'][$x]]++;
-            }
-
-            $table[$i][$this->keys['v->k'][$x]] = 1;
+      $tmp = [];
+      
+      foreach ($this->freqItmsts as $k => $v) {
+         $arr     = explode($this->delimiter, $k);
+         
+         $subsets = $this->subsets($arr);
+         foreach ($subsets as $subset) {
+            array_push($tmp, $subset);
          }
       }
-
-      $tmp = array();
-      foreach ($array as $item => $sup) {
-         if ($sup >= $this->minSup) {
-
-            $tmp[] = array($item);
-         }
-      }
-
-      $this->allthings[$this->phase] = $tmp;
-      $this->table = $table;
+      
+      return array_map("unserialize", array_unique(array_map("serialize", $tmp)));
    }
 
-   /**
-        1. مقدار سوپریموم را با توجه به ورودی شناسه آیتمها شمارش می کند
-    **/
    private function scan($arr, $implodeArr = '')
    {
       $cr = 0;
@@ -177,18 +138,17 @@ class Apriori
             $result[] = $tmp;
          }
       }
-
       return $result;
    }
 
    /**
         1. آیتم ستهای تکراری را بر می گرداند
     **/
-   private function freqItemsets($db)
+   private function freqItemsets()
    {
 
-      $this->makeTable($db);
       while (1) {
+
          if ($this->phase >= $this->maxPhase) {
             break;
          }
@@ -205,6 +165,7 @@ class Apriori
                sort($item);
                $implodeArr = implode($this->delimiter, $item);
                if (!isset($this->freqItmsts[$implodeArr])) {
+
                   $sup = $this->scan($item, $implodeArr);
                   if ($sup >= $this->minSup) {
                      $this->allthings[$this->phase + 1][] = $item;
@@ -238,25 +199,5 @@ class Apriori
             }
          }
       }
-   }
-
-   public function freqItems($db)
-   {
-
-
-      $this->freqItemsets($db);
-
-      $tmp = [];
-
-      foreach ($this->freqItmsts as $k => $v) {
-         $arr     = explode($this->delimiter, $k);
-         $subsets = $this->subsets($arr);
-         foreach ($subsets as $subset) {
-            array_push($tmp, $subset);
-         }
-      }
-      $tmp = array_map("unserialize", array_unique(array_map("serialize", $tmp)));
-
-      return $tmp;
    }
 }

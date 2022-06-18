@@ -2,15 +2,15 @@
 
 class Eclate{
     public $minsupp;
-    public $conf;
+
     public $frequentitems;
     public $duration = 0;
     public $dataset;
 
-    public function __construct($dataset,$minsupp,$conf){
+    public function __construct($dataset,$minsupp){
         $this->dataset = $dataset;
         $this->minsupp = $minsupp;
-        $this->conf = $conf;
+
         $start = microtime(true);
         
         $this->duration = (microtime(true) - $start)*1000;
@@ -106,8 +106,8 @@ class Eclate{
                     }
                 }		
             }
-
-            $freqItemsets = $this->eclat($newAtoms,$this->minsupp,$freqItemsets);
+            $adres = &$freqItemsets;
+            $freqItemsets = $this->eclat($newAtoms,$this->minsupp,$adres);
 
         }
 
@@ -142,13 +142,6 @@ class Eclate{
             $freqItemsets = $this->eclat($newAtoms, $min,$freqItemsets);
         }
         return $freqItemsets;
-    }
-
-    public function AssociationRules(){
-        $assRules = new AssociationRules($this->frequentitems,$this->minsupp,$this->conf);
-        $assRules->makeTable($this->dataset);
-    
-        return $assRules->process();
     }
 
 

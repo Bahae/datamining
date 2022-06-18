@@ -15,20 +15,21 @@ class AssociationRules
     private $allitem   = array();
     private $phase       = 1;
 
-    public function __construct($freq,$minsup,$minconf)
+    public function __construct($freq,$minsup,$minconf,$keys,$allsups,$table,)
     {
         $this->freq = $freq;
         $this->minConf = $minconf;
         $this->minSup = $minsup;
-        
+        $this->keys = $keys;
+        $this->table = $table;
+        $this->allsups = $allsups;
     }
 
     public function process()
-    {
+    {  
+        $result = [];
         foreach ($this->freq as $k => $v) {
-
-            $arr     = $v;
-            $subsets = $this->subsets($arr);
+            $subsets = $this->subsets($v);
             
             $num     = count($subsets);
             for ($i = 0; $i < $num; $i++) {
@@ -38,14 +39,12 @@ class AssociationRules
 
                         $n1 = $this->realName($subsets[$i]);
                         $n2 = $this->realName($subsets[$j]);
-
-                        //echo 'n1:'.$n1.' n2:'.$n2.'..<br>';
                         
                         $scan = $this->scan($this->combine($subsets[$i], $subsets[$j]));
-                        //echo $scan.'<br>';
+                        
                         $c1   = $this->confidence($this->scan($subsets[$i]), $scan);
                         $c2   = $this->confidence($this->scan($subsets[$j]), $scan);
-
+                        
                         if ($c1 >= $this->minConf) {
                             $result[$n1][$n2] = $c1;
                         }
@@ -60,6 +59,7 @@ class AssociationRules
                 }
             }
         }
+       
         return $this->rules = $result;
     }
     private function subsets($items)
@@ -85,21 +85,6 @@ class AssociationRules
         return $result;
     }
 
-    public static function print($rules){
-        $tmp = [];
-        foreach($rules as $a =>$rules){
-            foreach($rules as $b => $confidence){
-                $tmp += [
-                    $a.' => '.$b => $confidence,
-                ];
-                
-            }
-        }
-        arsort($tmp);
-        foreach($tmp as $k => $c){
-            echo $k .' = '.$c.'%<br>';
-        }
-    }
     //1-2=>2-3 : false
     //1-2=>5-6 : true
     private function checkRule($a, $b)
@@ -118,21 +103,22 @@ class AssociationRules
     }
     private function realName($arr)
     {
+        
         $result = '';
-
         $num = count($arr);
         for ($j = 0; $j < $num; $j++) {
             if ($j) {
                 $result .= $this->delimiter;
             }
-
+            
             $result .= $this->keys['k->v'][$arr[$j]];
         }
-
+        //echo($result).'<br>';
         return $result;
     }
     private function scan($arr, $implodeArr = '')
     {
+
         $cr = 0;
 
         if ($implodeArr) {
@@ -194,34 +180,8 @@ class AssociationRules
         //echo $sup_ab.'/'.$sup_a.'<br>';
         return round(($sup_ab / $sup_a) * 100, 2);
     }
-    public function printAssociationRules()
-    {
-        $no = 1;
-        if ($this->rules == null) {
-            echo "<h3>Tidak ada aturan asosiasi yang terbentuk </h3>";
-        } else {
-            echo "<h3 align='center'>Association Rules yang terbentuk</h3><th>";
 
-            echo
-            "<table width='100%' height='80' class='table table-hover'>
-			<tr>
-			<th width='17%' class='col-md-1'>NO</th>
-			<th width='17%' class='col-md-5'>Association Rule</th>
-			<th width='12%' class='col-md-2'>Confidence</th>
-			</tr>";
-
-            foreach ($this->rules as $a => $arr) {
-                foreach ($arr as $b => $conf) {
-                    echo
-                    "<tr bgcolor='#E6E6E6'><td>$no</td><td>$a=> $b</td><td style='color:blue' width='100px'>$conf%</td></tr>";
-                    echo "<tr><td colspan='2'>Dari seluruh pelanggan yang membeli $a, $conf% juga membeli $b</td></tr>";
-                    $no++;
-                }
-            }
-            echo "</tbody><table>";
-        }
-    }
-    public function makeTable($db)
+    /* public function makeTable($db)
     { 
         $table   = array();
         $array   = array();
@@ -282,5 +242,5 @@ class AssociationRules
 
        $this->allitem[$this->phase] = $tmp;
        $this->table = $table;  
-    }
+    } */
 }

@@ -12,13 +12,16 @@
 </style>
 <pre>
 <?php 
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 require 'include/association_rules.php';
 require 'include/datamining.php';
 $dataset = [
-    [1, 2, 3, 4],
-    [1, 4, 3],
-    [2, 3],
-    [1, 5, 3],
+    [1, 3, 9, '<b style="color:red">B</b>'],
+    [2, 3, 5, '<b style="color:red">B</b>'],
+    [1, 2, 3, 5],
+    [2, 5],
+    [1, 2, 3, 5],
 ];
 $minSupport =  2;
 $confidence = 60;
@@ -59,5 +62,6 @@ $Eclate   = new DataMine($dataset,$minSupport,$confidence,'Eclate');
         <th><?=$FBGrowth->assRulesDuration?> ms</th>
         <th><?=$Eclate->assRulesDuration?> ms</th>
     </tr>
+    
     
 </table>

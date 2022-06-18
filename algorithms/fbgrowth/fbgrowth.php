@@ -4,9 +4,6 @@ include 'tree.php';
 class FPGrowth
 {
     protected $support = 0;
-    protected $confidence = 0;
-
-    private $patterns;
 
     private $dataset;
     public $duration = 0;
@@ -17,24 +14,14 @@ class FPGrowth
      * @param $support 1, 2, 3 ...
      * @param $confidence 0 ... 1
      */
-    public function __construct($dataset,$support, $confidence)
+    public function __construct($dataset,$support)
     {
         $this->support = $support;
-        $this->confidence = $confidence;
+
         $this->dataset = $dataset;
     }
     public function run(){
         return $this->patterns = $this->toFrequentItemset($this->findFrequentPatterns($this->dataset, $this->support));
-    }
-
-    /**
-     * Do algorithm
-     * @param $transactions
-     */
-    public function process($transactions)
-    {
-        $this->patterns = $this->findFrequentPatterns($transactions, $this->support);
-        $this->rules = $this->generateAssociationRules($this->patterns, $this->confidence);
     }
 
     protected function findFrequentPatterns($transactions, $support_threshold)
@@ -43,6 +30,7 @@ class FPGrowth
         return $tree->minePatterns($support_threshold);
     }
     protected function toFrequentItemset($array){
+
         $freq = [];$i = 0;
         foreach($array as $key => $_){
 
@@ -57,38 +45,14 @@ class FPGrowth
             }
             $i++;
         }
+        
         return $freq;
     }
 
-    protected function generateAssociationRules($patterns, $confidence_threshold)
-    {
-        $rules = [];
-        foreach (array_keys($patterns) as $itemsetStr) {
-            $itemset = explode(',', $itemsetStr);
-            $upper_support = $patterns[$itemsetStr];
-            for ($i = 1; $i < count($itemset); $i++) {
-                foreach (self::combinations($itemset, $i) as $antecedent) {
-                    sort($antecedent);
-                    $antecedentStr = implode(',', $antecedent);
-                    $consequent = array_diff($itemset, $antecedent);
-                    sort($consequent);
-                    $consequentStr = implode(',', $consequent);
-                    if (isset($patterns[$antecedentStr])) {
-                        $lower_support = $patterns[$antecedentStr];
-                        $confidence = (floatval($upper_support) / $lower_support);
-                        if ($confidence >= $confidence_threshold) {
-                            $rules[] = [$antecedentStr, $consequentStr, $confidence];
-                        }
-                    }
-                }
-            }
-        }
-        return $rules;
-    }
+    
 
     public static function iter($var)
     {
-
         switch (true) {
             case $var instanceof \Iterator:
                 return $var;

@@ -226,7 +226,7 @@ class FPTree
                 if (in_array($pattern, $patterns)) {
                     if(!isset($patterns[$pattern])){
                         $patterns[$pattern] = $subtree_patterns[$pattern];
-                    }else
+                    }else 
                     $patterns[$pattern] += $subtree_patterns[$pattern];
                 } else {
                     $patterns[$pattern] = $subtree_patterns[$pattern];
