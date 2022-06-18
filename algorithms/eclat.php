@@ -5,17 +5,23 @@ class Eclate{
     public $conf;
     public $frequentitems;
     public $duration = 0;
+    public $dataset;
 
     public function __construct($dataset,$minsupp,$conf){
         $this->dataset = $dataset;
         $this->minsupp = $minsupp;
         $this->conf = $conf;
         $start = microtime(true);
-        $this->run($dataset);
+        
         $this->duration = (microtime(true) - $start)*1000;
     }
 
-    public function run($dataset){
+    public function run(){
+        $this->process($this->dataset);
+        return $this->frequentitems;
+    }
+
+    public function process($dataset){
         $itemTidsets = [];
         $itemPairCount = [];
         // Create vertical representation of the transactions and count item pairs.

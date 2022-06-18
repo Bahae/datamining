@@ -7,7 +7,6 @@ class FPGrowth
     protected $confidence = 0;
 
     private $patterns;
-    private $rules;
 
     private $dataset;
     public $duration = 0;
@@ -23,16 +22,16 @@ class FPGrowth
         $this->support = $support;
         $this->confidence = $confidence;
         $this->dataset = $dataset;
-        $start = microtime(true);
-        $this->patterns = $this->toFrequentItemset($this->findFrequentPatterns($dataset, $this->support));
-        $this->duration = (microtime(true) - $start)*1000;
+    }
+    public function run(){
+        return $this->patterns = $this->toFrequentItemset($this->findFrequentPatterns($this->dataset, $this->support));
     }
 
     /**
      * Do algorithm
      * @param $transactions
      */
-    public function run($transactions)
+    public function process($transactions)
     {
         $this->patterns = $this->findFrequentPatterns($transactions, $this->support);
         $this->rules = $this->generateAssociationRules($this->patterns, $this->confidence);
@@ -59,12 +58,6 @@ class FPGrowth
             $i++;
         }
         return $freq;
-    }
-    public function AssociationRules(){
-        $assRules = new AssociationRules($this->patterns,$this->support,$this->confidence);
-        $assRules->makeTable($this->dataset);
-    
-        return $assRules->process();
     }
 
     protected function generateAssociationRules($patterns, $confidence_threshold)

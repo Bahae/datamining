@@ -84,6 +84,22 @@ class AssociationRules
         }
         return $result;
     }
+
+    public static function print($rules){
+        $tmp = [];
+        foreach($rules as $a =>$rules){
+            foreach($rules as $b => $confidence){
+                $tmp += [
+                    $a.' => '.$b => $confidence,
+                ];
+                
+            }
+        }
+        arsort($tmp);
+        foreach($tmp as $k => $c){
+            echo $k .' = '.$c.'%<br>';
+        }
+    }
     //1-2=>2-3 : false
     //1-2=>5-6 : true
     private function checkRule($a, $b)

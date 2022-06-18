@@ -171,7 +171,7 @@ class FPTree
             $patterns[implode(',', $suffix_value)] = $this->root->count;
         }
         for ($i = 1; $i <= count($items); $i++) {
-            foreach (FPGrowth::combinations($items, $i) as $subset) {
+            foreach (self::combinations($items, $i) as $subset) {
                 $pattern = array_merge($subset, $suffix_value);
                 sort($pattern);
                 $min = PHP_INT_MAX;
@@ -234,5 +234,65 @@ class FPTree
             }
         }
         return $patterns;
+    }
+    public static function iter($var){
+
+        switch (true) {
+            case $var instanceof \Iterator:
+                return $var;
+
+            case $var instanceof \Traversable:
+                return new \IteratorIterator($var);
+
+            case is_string($var):
+                $var = str_split($var);
+
+            case is_array($var):
+                return new \ArrayIterator($var);
+
+            default:
+                $type = gettype($var);
+                throw new \InvalidArgumentException("'$type' type is not iterable");
+        }
+
+        return;
+    }
+
+    public static function combinations($iterable, $r)
+    {
+        $pool = is_array($iterable) ? $iterable : iterator_to_array(self::iter($iterable));
+        $n = sizeof($pool);
+
+        if ($r > $n) {
+            return;
+        }
+
+        $indices = range(0, $r - 1);
+        yield array_slice($pool, 0, $r);
+
+        for (; ;) {
+            for (; ;) {
+                for ($i = $r - 1; $i >= 0; $i--) {
+                    if ($indices[$i] != $i + $n - $r) {
+                        break 2;
+                    }
+                }
+
+                return;
+            }
+
+            $indices[$i]++;
+
+            for ($j = $i + 1; $j < $r; $j++) {
+                $indices[$j] = $indices[$j - 1] + 1;
+            }
+
+            $row = [];
+            foreach ($indices as $i) {
+                $row[] = $pool[$i];
+            }
+
+            yield $row;
+        }
     }
 }
